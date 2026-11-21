@@ -1,5 +1,5 @@
 {
-  "name": "카메라 가드",
+  "name": "국방모바일보안(병사)",
   "description": "카메라 차단 메인 화면 및 메뉴/설정 화면 UI 디자인 목업 앱",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
