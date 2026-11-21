@@ -16,7 +16,11 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.ui.components.HiddenInfoEditDialog
@@ -43,9 +47,16 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun CameraGuardMockupApp(
-  viewModel: MockupViewModel = viewModel(),
+  viewModel: MockupViewModel = run {
+    val context = LocalContext.current.applicationContext
+    viewModel(factory = remember(context) { MockupViewModel.factory(context) })
+  },
 ) {
   val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+  LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+    viewModel.syncElapsedTime()
+  }
 
   AnimatedContent(
     targetState = uiState.currentScreen,

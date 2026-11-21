@@ -1,7 +1,9 @@
 package com.example.ui.state
 
+import android.content.Context
 import android.os.SystemClock
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -56,19 +58,61 @@ data class MockupUiState(
 }
 
 /**
- * Top-level UI-only ViewModel managing screen routing, blocked active state, real-time UI elapsed
- * count-up timer, settings toggles, and hidden triple-tap display-info editor state.
- * Intentionally contains no device camera blocking, GPS/location access, audio, or persistence.
+ * Top-level UI-only ViewModel managing screen routing, persisted blocked/unblocked state,
+ * wall-clock-backed real-time elapsed timer surviving background process death, settings toggles,
+ * and hidden triple-tap display-info editor state.
+ * Intentionally contains no real device camera blocking, GPS/location access, or audio control.
  */
-class MockupViewModel : ViewModel() {
-  private val _uiState = MutableStateFlow(MockupUiState())
-  val uiState: StateFlow<MockupUiState> = _uiState.asStateFlow()
+class MockupViewModel(
+  private val store: MockupStateStore,
+  private val wallClockMs: () -> Long = System::currentTimeMillis,
+  private val monoClockMs: () -> Long = SystemClock::elapsedRealtime,
+) : ViewModel() {
+  private val _uiState: MutableStateFlow<MockupUiState>
+  val uiState: StateFlow<MockupUiState>
 
-  private var blockedStartElapsedRealtimeMs: Long? = null
   private var timerJob: Job? = null
 
   // Tracks monotonic timestamps for triple-tap detection on the top-right "삭제" button
   private val deleteTapTimestamps = ArrayDeque<Long>()
+
+  init {
+    val saved = store.load()
+    val restoredBlockedAt = if (saved.isBlocked) saved.blockedAtMillis else null
+    val initialElapsedSeconds =
+      if (restoredBlockedAt != null) {
+        computeElapsedSeconds(restoredBlockedAt)
+      } else {
+        0L
+      }
+    val restoredTimestampText =
+      if (restoredBlockedAt != null) {
+        saved.blockedTimestampText.ifEmpty { formatBlockTimestamp(restoredBlockedAt) }
+      } else {
+        ""
+      }
+
+    _uiState =
+      MutableStateFlow(
+        MockupUiState(
+          isBlocked = restoredBlockedAt != null,
+          blockedAtMillis = restoredBlockedAt,
+          blockedTimestampText = restoredTimestampText,
+          elapsedSeconds = initialElapsedSeconds,
+          voiceAlertEnabled = saved.voiceAlertEnabled,
+          vibrationAlertEnabled = saved.vibrationAlertEnabled,
+          installDateTime = saved.installDateTime,
+          manufacturer = saved.manufacturer,
+          modelName = saved.modelName,
+          osVersion = saved.osVersion,
+        ),
+      )
+    uiState = _uiState.asStateFlow()
+
+    if (restoredBlockedAt != null) {
+      startElapsedTicker(restoredBlockedAt)
+    }
+  }
 
   fun openMenu() {
     deleteTapTimestamps.clear()
@@ -83,11 +127,9 @@ class MockupViewModel : ViewModel() {
     deleteTapTimestamps.clear()
     if (blocked) {
       if (_uiState.value.isBlocked) return
-      val nowWallMs = System.currentTimeMillis()
-      val nowMonoMs = SystemClock.elapsedRealtime()
+      val nowWallMs = wallClockMs()
       val formattedTimestamp = formatBlockTimestamp(nowWallMs)
 
-      blockedStartElapsedRealtimeMs = nowMonoMs
       _uiState.update {
         it.copy(
           isBlocked = true,
@@ -96,7 +138,8 @@ class MockupViewModel : ViewModel() {
           elapsedSeconds = 0L,
         )
       }
-      startElapsedTicker(nowMonoMs)
+      persistCurrentState()
+      startElapsedTicker(nowWallMs)
     } else {
       stopAndResetTimer()
       _uiState.update {
@@ -107,6 +150,31 @@ class MockupViewModel : ViewModel() {
           elapsedSeconds = 0L,
         )
       }
+      persistCurrentState()
+    }
+  }
+
+  /**
+   * Immediately recalculates elapsed seconds from the persisted blocked wall-clock timestamp
+   * when the app returns to the foreground after background sleep or Doze.
+   */
+  fun syncElapsedTime() {
+    val current = _uiState.value
+    val blockedAt = current.blockedAtMillis
+    if (current.isBlocked && blockedAt != null) {
+      val elapsedSec = computeElapsedSeconds(blockedAt)
+      if (current.elapsedSeconds != elapsedSec) {
+        _uiState.update { state ->
+          if (state.isBlocked && state.blockedAtMillis == blockedAt) {
+            state.copy(elapsedSeconds = elapsedSec)
+          } else {
+            state
+          }
+        }
+      }
+      if (timerJob?.isActive != true) {
+        startElapsedTicker(blockedAt)
+      }
     }
   }
 
@@ -116,7 +184,7 @@ class MockupViewModel : ViewModel() {
    */
   fun onDeleteButtonTapped() {
     if (_uiState.value.isBlocked) return
-    val nowMs = SystemClock.elapsedRealtime()
+    val nowMs = monoClockMs()
     while (deleteTapTimestamps.isNotEmpty() && nowMs - deleteTapTimestamps.first() > TRIPLE_TAP_WINDOW_MS) {
       deleteTapTimestamps.removeFirst()
     }
@@ -146,22 +214,47 @@ class MockupViewModel : ViewModel() {
         isEditDialogVisible = false,
       )
     }
+    persistCurrentState()
   }
 
   fun toggleVoiceAlert() {
     _uiState.update { it.copy(voiceAlertEnabled = !it.voiceAlertEnabled) }
+    persistCurrentState()
   }
 
   fun toggleVibrationAlert() {
     _uiState.update { it.copy(vibrationAlertEnabled = !it.vibrationAlertEnabled) }
+    persistCurrentState()
   }
 
-  private fun startElapsedTicker(startMonoMs: Long) {
+  private fun persistCurrentState() {
+    val current = _uiState.value
+    store.save(
+      PersistedMockupState(
+        isBlocked = current.isBlocked,
+        blockedAtMillis = current.blockedAtMillis,
+        blockedTimestampText = current.blockedTimestampText,
+        voiceAlertEnabled = current.voiceAlertEnabled,
+        vibrationAlertEnabled = current.vibrationAlertEnabled,
+        installDateTime = current.installDateTime,
+        manufacturer = current.manufacturer,
+        modelName = current.modelName,
+        osVersion = current.osVersion,
+      ),
+    )
+  }
+
+  private fun computeElapsedSeconds(blockedAtWallMs: Long): Long {
+    val elapsedMs = (wallClockMs() - blockedAtWallMs).coerceAtLeast(0L)
+    return elapsedMs / 1_000L
+  }
+
+  private fun startElapsedTicker(blockedAtWallMs: Long) {
     timerJob?.cancel()
     timerJob =
       viewModelScope.launch {
         while (isActive) {
-          val elapsedMs = (SystemClock.elapsedRealtime() - startMonoMs).coerceAtLeast(0L)
+          val elapsedMs = (wallClockMs() - blockedAtWallMs).coerceAtLeast(0L)
           val elapsedSec = elapsedMs / 1_000L
           _uiState.update { state ->
             if (state.isBlocked && state.elapsedSeconds != elapsedSec) {
@@ -179,7 +272,6 @@ class MockupViewModel : ViewModel() {
   private fun stopAndResetTimer() {
     timerJob?.cancel()
     timerJob = null
-    blockedStartElapsedRealtimeMs = null
   }
 
   private fun formatBlockTimestamp(timeMillis: Long): String {
@@ -195,5 +287,18 @@ class MockupViewModel : ViewModel() {
   companion object {
     private const val TRIPLE_TAP_WINDOW_MS = 1_500L
     private const val TRIPLE_TAP_COUNT = 3
+
+    fun factory(context: Context): ViewModelProvider.Factory {
+      val appContext = context.applicationContext
+      return object : ViewModelProvider.Factory {
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+          require(modelClass.isAssignableFrom(MockupViewModel::class.java)) {
+            "Unknown ViewModel class: ${modelClass.name}"
+          }
+          return MockupViewModel(store = SharedPreferencesMockupStateStore(appContext)) as T
+        }
+      }
+    }
   }
 }
