@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Subtle translucent outer ring matching the main screen aesthetic -->
+    <path
+        android:fillColor="#26FFFFFF"
+        android:pathData="M54,24A30,30 0 1,0 54,84A30,30 0 1,0 54,24ZM54,30A24,24 0 1,1 54,78A24,24 0 1,1 54,30Z" />
+    <!-- Bold white camera silhouette inside 66dp safe zone -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M45.5,39L42.8,43H37C34.8,43 33,44.8 33,47V65C33,67.2 34.8,69 37,69H71C73.2,69 75,67.2 75,65V47C75,44.8 73.2,43 71,43H65.2L62.5,39H45.5ZM54,47C59,47 63,51 63,56C63,61 59,65 54,65C49,65 45,61 45,56C45,51 49,47 54,47ZM54,50.5A5.5,5.5 0 1,0 54,61.5A5.5,5.5 0 1,0 54,50.5Z" />
+</vector>

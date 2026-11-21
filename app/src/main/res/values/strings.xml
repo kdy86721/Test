@@ -1,0 +1,53 @@
+<resources>
+    <string name="app_name">카메라 가드</string>
+
+    <!-- Main Screen -->
+    <string name="action_menu">메뉴</string>
+    <string name="action_delete">삭제</string>
+    <string name="install_datetime_format">설치일시 : %1$s</string>
+    <string name="blocked_datetime_format">차단일시 : %1$s</string>
+    <string name="support_center_hours">09~21시(평일)/09~18시(휴일)</string>
+    <string name="help_call_title">국방헬프콜</string>
+    <string name="help_call_number">1303</string>
+    <string name="blocked_elapsed_days_format">%1$d 일</string>
+    <string name="action_block_camera">카메라 차단</string>
+    <string name="action_unblock_camera">기능해제(바른)</string>
+    <string name="app_version">Version 3.0.29</string>
+    <string name="cd_defense_emblem">국방 엠블럼</string>
+    <string name="cd_header_lock_action">차단 상태 아이콘</string>
+    <string name="cd_camera_status_icon">카메라 차단 아이콘</string>
+    <string name="cd_blocked_camera_icon">카메라 차단 활성 상태 아이콘</string>
+    <string name="cd_help_call_logo">국방헬프콜 1303 로고</string>
+
+    <!-- Menu / Settings Screen -->
+    <string name="cd_close_menu">닫기</string>
+    <string name="menu_brand_title">국방모바일보안</string>
+    <string name="support_center_title">고객지원센터</string>
+    <string name="support_center_phone">02) 6424 - 5282 ~ 5284</string>
+
+    <string name="section_app_info">앱 정보</string>
+    <string name="menu_user_guide">사용가이드</string>
+    <string name="menu_view_logs">로그보기</string>
+    <string name="cd_arrow_next">이동</string>
+
+    <string name="setting_voice_alert_title">음성알림</string>
+    <string name="setting_voice_alert_desc">차단 또는 허용 시 음성 알림</string>
+    <string name="setting_vibration_alert_title">진동알림</string>
+    <string name="setting_vibration_alert_desc">차단 또는 허용 시 진동 알림</string>
+    <string name="menu_location_unblock">위치기반 해제</string>
+
+    <string name="section_system_info">시스템 정보</string>
+    <string name="sys_info_manufacturer_label">제조사</string>
+    <string name="sys_info_manufacturer_value">samsung</string>
+    <string name="sys_info_model_label">모델명</string>
+    <string name="sys_info_model_value">SM-G991N</string>
+    <string name="sys_info_os_label">OS버전</string>
+    <string name="sys_info_os_value">15</string>
+    <string name="action_uninstall_app">국방모바일보안앱 삭제</string>
+
+    <!-- Hidden Info Edit Dialog -->
+    <string name="edit_dialog_title">표시 정보 수정</string>
+    <string name="edit_field_install_datetime">설치일시</string>
+    <string name="action_cancel">취소</string>
+    <string name="action_save">저장</string>
+</resources>
