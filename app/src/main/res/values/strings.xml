@@ -11,7 +11,7 @@
     <string name="help_call_number">1303</string>
     <string name="blocked_elapsed_days_format">%1$d 일</string>
     <string name="action_block_camera">카메라 차단</string>
-    <string name="action_unblock_camera">기능해제(바른)</string>
+    <string name="action_unblock_camera">기능해제(비콘)</string>
     <string name="app_version">Version 3.0.29</string>
     <string name="cd_defense_emblem">국방 엠블럼</string>
     <string name="cd_header_lock_action">차단 상태 아이콘</string>

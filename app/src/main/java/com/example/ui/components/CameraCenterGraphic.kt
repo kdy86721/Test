@@ -47,8 +47,10 @@ import kotlin.math.sin
 
 /**
  * Centered "국방헬프콜 1303" brand logo strip positioned right below the header wave transition:
- * - Left: colorful winged embracing dual-figure graphic
- * - Right: sky-blue "국방헬프콜" with curved handset swoosh + bold orange-gradient geometric "1303"
+ * - Left: colorful winged embracing dual-figure graphic (sky-blue→deep-blue left figure with
+ *   3-feather wing + yellow→lime-green right figure with vivid coral-red embrace overlap)
+ * - Right top: bold blue "국방헬프콜" with curved upward-tilted blue telephone handset accent
+ * - Right bottom: thick square/techno geometric "1303" with vertical gold (#FFB300) → orange-red (#F4511E) gradient
  */
 @Composable
 fun DefenseHelpCallBanner(modifier: Modifier = Modifier) {
@@ -64,61 +66,71 @@ fun DefenseHelpCallBanner(modifier: Modifier = Modifier) {
     horizontalArrangement = Arrangement.Center,
     verticalAlignment = Alignment.CenterVertically,
   ) {
-    // Colorful winged dual-figure symbol
-    HelpCallFiguresEmblem(modifier = Modifier.size(width = 64.dp, height = 56.dp))
+    // Colorful winged embracing dual-figure symbol
+    HelpCallFiguresEmblem(modifier = Modifier.size(width = 74.dp, height = 62.dp))
 
     Spacer(modifier = Modifier.width(8.dp))
 
-    // "국방헬프콜" with handset underline swoosh + bold orange gradient "1303"
+    // Right stacked text block: "국방헬프콜" + curved blue handset on top, sharp block "1303" below
     Column(horizontalAlignment = Alignment.Start) {
-      Box(modifier = Modifier.width(104.dp).height(23.dp)) {
+      Row(
+        verticalAlignment = Alignment.CenterVertically,
+      ) {
         Text(
           text = stringResource(R.string.help_call_title),
           style =
             MaterialTheme.typography.titleMedium.copy(
-              fontSize = 15.5.sp,
-              lineHeight = 18.sp,
+              fontSize = 17.sp,
+              lineHeight = 20.sp,
               fontWeight = FontWeight.ExtraBold,
-              letterSpacing = (-0.4).sp,
+              letterSpacing = (-0.5).sp,
             ),
           color = colors.helpCallBlue,
           maxLines = 1,
-          modifier = Modifier.align(Alignment.TopStart),
         )
 
-        // Stylized handset receiver on the right curving smoothly underneath as a blue swoosh
-        Canvas(modifier = Modifier.matchParentSize()) {
+        Spacer(modifier = Modifier.width(2.dp))
+
+        // Upward-curving blue telephone handset / smile accent right beside "국방헬프콜"
+        Canvas(modifier = Modifier.size(width = 16.dp, height = 20.dp)) {
           val w = size.width
           val h = size.height
           val handsetBrush =
-            Brush.horizontalGradient(
-              colors = listOf(colors.helpCallBlue, colors.helpCallBlueDeep),
+            Brush.verticalGradient(
+              colors = listOf(colors.helpCallBlueDeep, colors.helpCallBlue),
             )
-          val swooshPath =
+          // Curved handset spine sweeping from bottom-left up toward top-right
+          val handsetBody =
             Path().apply {
-              moveTo(w * 0.08f, h * 0.90f)
-              quadraticTo(w * 0.56f, h * 1.00f, w * 0.87f, h * 0.83f)
-              quadraticTo(w * 0.95f, h * 0.72f, w * 0.96f, h * 0.24f)
+              moveTo(w * 0.08f, h * 0.86f)
+              cubicTo(w * 0.46f, h * 0.84f, w * 0.72f, h * 0.56f, w * 0.76f, h * 0.14f)
             }
           drawPath(
-            path = swooshPath,
+            path = handsetBody,
             brush = handsetBrush,
-            style = Stroke(width = 2.0.dp.toPx(), cap = StrokeCap.Round),
+            style = Stroke(width = 3.0.dp.toPx(), cap = StrokeCap.Round),
           )
-          // Small top-right receiver earpiece accent
+          // Upper earpiece bulb
           drawRoundRect(
             color = colors.helpCallBlueDeep,
-            topLeft = Offset(w * 0.90f, h * 0.14f),
-            size = Size(w * 0.065f, h * 0.22f),
-            cornerRadius = CornerRadius(2.dp.toPx(), 2.dp.toPx()),
+            topLeft = Offset(w * 0.46f, h * 0.08f),
+            size = Size(w * 0.36f, h * 0.24f),
+            cornerRadius = CornerRadius(2.2.dp.toPx(), 2.2.dp.toPx()),
+          )
+          // Lower mouthpiece bulb
+          drawRoundRect(
+            color = colors.helpCallBlue,
+            topLeft = Offset(w * 0.02f, h * 0.72f),
+            size = Size(w * 0.34f, h * 0.22f),
+            cornerRadius = CornerRadius(2.2.dp.toPx(), 2.2.dp.toPx()),
           )
         }
       }
 
-      Spacer(modifier = Modifier.height(2.dp))
+      Spacer(modifier = Modifier.height(3.dp))
 
-      // Bold geometric orange-gradient "1303" logo digits
-      OrangeBlock1303Logo(modifier = Modifier.width(102.dp).height(29.dp))
+      // Bold square/techno vertical-gradient "1303" logo digits
+      OrangeBlock1303Logo(modifier = Modifier.width(114.dp).height(31.dp))
     }
   }
 }
@@ -131,90 +143,112 @@ private fun HelpCallFiguresEmblem(modifier: Modifier = Modifier) {
     val w = size.width
     val h = size.height
 
-    val blueGrad =
+    val blueHeadGrad =
+      Brush.linearGradient(
+        colors = listOf(colors.symbolBlue, colors.symbolBlueDeep),
+        start = Offset(w * 0.28f, h * 0.14f),
+        end = Offset(w * 0.48f, h * 0.36f),
+      )
+    val blueBodyGrad =
       Brush.verticalGradient(
         colors = listOf(colors.symbolBlue, colors.symbolBlueDeep),
+        startY = h * 0.34f,
+        endY = h * 0.96f,
       )
-    val yellowGreenGrad =
+    val yellowGreenHeadGrad =
       Brush.verticalGradient(
         colors = listOf(colors.symbolYellow, colors.symbolGreen),
+        startY = h * 0.06f,
+        endY = h * 0.28f,
       )
-    val coralGrad =
+    val yellowGreenBodyGrad =
+      Brush.verticalGradient(
+        colors = listOf(colors.symbolYellow, colors.symbolGreen),
+        startY = h * 0.24f,
+        endY = h * 0.86f,
+      )
+    val embraceOverlapGrad =
       Brush.horizontalGradient(
-        colors = listOf(colors.helpCallOrangeBottom, colors.symbolCoral),
+        colors = listOf(colors.helpCallOrangeTop, colors.helpCallOrangeBottom, colors.symbolCoral),
+        startX = w * 0.58f,
+        endX = w * 0.96f,
       )
 
-    // Left winged blue figure - 3 soft layered wing tips on far left
+    // 1. Left blue figure's 3-tiered sweeping wing extending upward-left
     val wingPath =
       Path().apply {
-        moveTo(w * 0.28f, h * 0.42f)
-        quadraticTo(w * 0.14f, h * 0.36f, w * 0.02f, h * 0.36f)
-        quadraticTo(w * 0.10f, h * 0.46f, w * 0.22f, h * 0.49f)
-        quadraticTo(w * 0.11f, h * 0.50f, w * 0.06f, h * 0.51f)
-        quadraticTo(w * 0.13f, h * 0.58f, w * 0.25f, h * 0.58f)
-        quadraticTo(w * 0.17f, h * 0.62f, w * 0.13f, h * 0.64f)
-        quadraticTo(w * 0.22f, h * 0.68f, w * 0.32f, h * 0.64f)
+        moveTo(w * 0.29f, h * 0.40f)
+        // Uppermost sweeping wing feather
+        cubicTo(w * 0.18f, h * 0.36f, w * 0.08f, h * 0.33f, w * 0.02f, h * 0.31f)
+        cubicTo(w * 0.06f, h * 0.42f, w * 0.14f, h * 0.47f, w * 0.22f, h * 0.49f)
+        // Middle wing feather
+        cubicTo(w * 0.14f, h * 0.49f, w * 0.08f, h * 0.49f, w * 0.06f, h * 0.50f)
+        cubicTo(w * 0.10f, h * 0.57f, w * 0.18f, h * 0.59f, w * 0.25f, h * 0.59f)
+        // Lower wing feather
+        cubicTo(w * 0.18f, h * 0.62f, w * 0.13f, h * 0.64f, w * 0.12f, h * 0.65f)
+        cubicTo(w * 0.19f, h * 0.69f, w * 0.26f, h * 0.68f, w * 0.32f, h * 0.65f)
         close()
       }
-    drawPath(path = wingPath, brush = blueGrad)
+    drawPath(path = wingPath, brush = blueBodyGrad)
 
-    // Right yellow-to-green figure head
+    // 2. Right yellow-to-lime figure head (positioned slightly higher than left figure)
     drawCircle(
-      color = colors.symbolYellow,
-      radius = w * 0.072f,
-      center = Offset(w * 0.72f, h * 0.17f),
+      brush = yellowGreenHeadGrad,
+      radius = w * 0.070f,
+      center = Offset(w * 0.69f, h * 0.145f),
     )
 
-    // Right yellow-to-green sweeping body
+    // 3. Right yellow-to-lime sweeping curved body (curving smoothly down-right)
     val rightBody =
       Path().apply {
-        moveTo(w * 0.64f, h * 0.32f)
-        quadraticTo(w * 0.76f, h * 0.25f, w * 0.84f, h * 0.37f)
-        quadraticTo(w * 0.87f, h * 0.54f, w * 0.78f, h * 0.72f)
-        quadraticTo(w * 0.72f, h * 0.84f, w * 0.64f, h * 0.86f)
-        quadraticTo(w * 0.67f, h * 0.70f, w * 0.63f, h * 0.52f)
-        quadraticTo(w * 0.60f, h * 0.40f, w * 0.64f, h * 0.32f)
+        moveTo(w * 0.63f, h * 0.28f)
+        cubicTo(w * 0.72f, h * 0.23f, w * 0.82f, h * 0.29f, w * 0.83f, h * 0.44f)
+        cubicTo(w * 0.84f, h * 0.60f, w * 0.77f, h * 0.77f, w * 0.65f, h * 0.85f)
+        cubicTo(w * 0.62f, h * 0.86f, w * 0.61f, h * 0.83f, w * 0.63f, h * 0.78f)
+        cubicTo(w * 0.66f, h * 0.67f, w * 0.64f, h * 0.54f, w * 0.61f, h * 0.42f)
+        cubicTo(w * 0.59f, h * 0.35f, w * 0.60f, h * 0.30f, w * 0.63f, h * 0.28f)
         close()
       }
-    drawPath(path = rightBody, brush = yellowGreenGrad)
+    drawPath(path = rightBody, brush = yellowGreenBodyGrad)
 
-    // Warm orange-to-coral heart/embrace accent on right shoulder
-    val embraceAccent =
+    // 4. Warm gold -> orange -> coral-red embrace overlap lobe where both arms meet
+    val embraceLobe =
       Path().apply {
-        moveTo(w * 0.61f, h * 0.42f)
-        quadraticTo(w * 0.78f, h * 0.34f, w * 0.90f, h * 0.37f)
-        quadraticTo(w * 0.97f, h * 0.41f, w * 0.94f, h * 0.50f)
-        quadraticTo(w * 0.89f, h * 0.58f, w * 0.63f, h * 0.57f)
+        moveTo(w * 0.59f, h * 0.40f)
+        cubicTo(w * 0.72f, h * 0.35f, w * 0.86f, h * 0.34f, w * 0.93f, h * 0.40f)
+        cubicTo(w * 0.98f, h * 0.45f, w * 0.95f, h * 0.54f, w * 0.86f, h * 0.57f)
+        cubicTo(w * 0.76f, h * 0.59f, w * 0.66f, h * 0.57f, w * 0.59f, h * 0.55f)
         close()
       }
-    drawPath(path = embraceAccent, brush = coralGrad)
+    drawPath(path = embraceLobe, brush = embraceOverlapGrad)
 
-    // Left blue figure head
+    // 5. Left sky-blue figure head
     drawCircle(
-      color = colors.symbolBlue,
-      radius = w * 0.076f,
-      center = Offset(w * 0.37f, h * 0.24f),
+      brush = blueHeadGrad,
+      radius = w * 0.080f,
+      center = Offset(w * 0.375f, h * 0.24f),
     )
 
-    // Left blue figure torso sweeping down + reaching arm bridging across to right figure
+    // 6. Left blue streamlined torso sweeping down + embracing arm reaching across to right figure
     val blueBody =
       Path().apply {
         moveTo(w * 0.27f, h * 0.40f)
-        quadraticTo(w * 0.34f, h * 0.34f, w * 0.45f, h * 0.39f)
-        quadraticTo(w * 0.56f, h * 0.42f, w * 0.66f, h * 0.41f)
-        lineTo(w * 0.66f, h * 0.55f)
-        quadraticTo(w * 0.54f, h * 0.57f, w * 0.45f, h * 0.56f)
-        quadraticTo(w * 0.48f, h * 0.74f, w * 0.46f, h * 0.96f)
-        quadraticTo(w * 0.35f, h * 0.92f, w * 0.31f, h * 0.76f)
-        quadraticTo(w * 0.26f, h * 0.60f, w * 0.27f, h * 0.40f)
+        cubicTo(w * 0.33f, h * 0.35f, w * 0.42f, h * 0.38f, w * 0.50f, h * 0.40f)
+        cubicTo(w * 0.56f, h * 0.41f, w * 0.61f, h * 0.40f, w * 0.64f, h * 0.40f)
+        lineTo(w * 0.64f, h * 0.55f)
+        cubicTo(w * 0.57f, h * 0.56f, w * 0.50f, h * 0.55f, w * 0.455f, h * 0.56f)
+        cubicTo(w * 0.475f, h * 0.72f, w * 0.47f, h * 0.89f, w * 0.44f, h * 0.96f)
+        cubicTo(w * 0.36f, h * 0.93f, w * 0.31f, h * 0.79f, w * 0.29f, h * 0.64f)
+        cubicTo(w * 0.26f, h * 0.52f, w * 0.25f, h * 0.44f, w * 0.27f, h * 0.40f)
         close()
       }
-    drawPath(path = blueBody, brush = blueGrad)
+    drawPath(path = blueBody, brush = blueBodyGrad)
   }
 }
 
 /**
- * Custom rounded-block geometric "1303" logo digits with a vivid yellow-orange to tangerine gradient.
+ * Custom sharp square/techno geometric "1303" logo digits with vertical
+ * bright gold (#FFB300) to deep orange-red (#F4511E) gradient matching the close-up photo.
  */
 @Composable
 private fun OrangeBlock1303Logo(modifier: Modifier = Modifier) {
@@ -228,60 +262,65 @@ private fun OrangeBlock1303Logo(modifier: Modifier = Modifier) {
         colors = listOf(colors.helpCallOrangeTop, colors.helpCallOrangeBottom),
       )
 
-    val stroke = h * 0.235f
-    val r = CornerRadius(2.4.dp.toPx(), 2.4.dp.toPx())
-    val gap = w * 0.055f
+    val stroke = h * 0.245f
+    val corner = CornerRadius(1.3.dp.toPx(), 1.3.dp.toPx())
+    val gap = w * 0.052f
 
+    // Compact '1' width + 3 equal square-proportioned wide block digits ('3', '0', '3')
     val w1 = w * 0.145f
     val wDigit = (w - w1 - gap * 3f) / 3f
 
-    // --- Digit '1' ---
+    // --- Digit '1' (short square top-left flag + thick vertical right stem) ---
     val x1 = 0f
     drawRoundRect(
       brush = orangeBrush,
       topLeft = Offset(x1, 0f),
       size = Size(w1, stroke),
-      cornerRadius = r,
+      cornerRadius = corner,
     )
     drawRoundRect(
       brush = orangeBrush,
-      topLeft = Offset(x1 + w1 - stroke, 0f),
-      size = Size(stroke, h),
-      cornerRadius = r,
+      topLeft = Offset(x1 + w1 - stroke * 0.95f, 0f),
+      size = Size(stroke * 0.95f, h),
+      cornerRadius = corner,
     )
 
-    fun drawBlockThree(left: Float) {
+    fun drawTechnoThree(left: Float) {
+      // Top horizontal bar
       drawRoundRect(
         brush = orangeBrush,
         topLeft = Offset(left, 0f),
         size = Size(wDigit, stroke),
-        cornerRadius = r,
+        cornerRadius = corner,
       )
+      // Middle horizontal bar (slightly recessed on the left)
       drawRoundRect(
         brush = orangeBrush,
-        topLeft = Offset(left + wDigit * 0.16f, (h - stroke) / 2f),
-        size = Size(wDigit * 0.84f, stroke),
-        cornerRadius = r,
+        topLeft = Offset(left + wDigit * 0.14f, (h - stroke) / 2f),
+        size = Size(wDigit * 0.86f, stroke),
+        cornerRadius = corner,
       )
+      // Bottom horizontal bar
       drawRoundRect(
         brush = orangeBrush,
         topLeft = Offset(left, h - stroke),
         size = Size(wDigit, stroke),
-        cornerRadius = r,
+        cornerRadius = corner,
       )
+      // Full-height right vertical spine
       drawRoundRect(
         brush = orangeBrush,
-        topLeft = Offset(left + wDigit - stroke, 0f),
-        size = Size(stroke, h),
-        cornerRadius = r,
+        topLeft = Offset(left + wDigit - stroke * 0.95f, 0f),
+        size = Size(stroke * 0.95f, h),
+        cornerRadius = corner,
       )
     }
 
     // --- First Digit '3' ---
     val x2 = x1 + w1 + gap
-    drawBlockThree(x2)
+    drawTechnoThree(x2)
 
-    // --- Digit '0' ---
+    // --- Digit '0' (crisp rectangular block frame with sharp inner cutout) ---
     val x3 = x2 + wDigit + gap
     val zeroPath =
       Path().apply {
@@ -289,19 +328,19 @@ private fun OrangeBlock1303Logo(modifier: Modifier = Modifier) {
         addRoundRect(
           RoundRect(
             rect = Rect(left = x3, top = 0f, right = x3 + wDigit, bottom = h),
-            cornerRadius = CornerRadius(3.5.dp.toPx(), 3.5.dp.toPx()),
+            cornerRadius = CornerRadius(2.0.dp.toPx(), 2.0.dp.toPx()),
           ),
         )
         addRoundRect(
           RoundRect(
             rect =
               Rect(
-                left = x3 + stroke,
+                left = x3 + stroke * 0.95f,
                 top = stroke,
-                right = x3 + wDigit - stroke,
+                right = x3 + wDigit - stroke * 0.95f,
                 bottom = h - stroke,
               ),
-            cornerRadius = CornerRadius(1.5.dp.toPx(), 1.5.dp.toPx()),
+            cornerRadius = CornerRadius(0.8.dp.toPx(), 0.8.dp.toPx()),
           ),
         )
       }
@@ -309,7 +348,7 @@ private fun OrangeBlock1303Logo(modifier: Modifier = Modifier) {
 
     // --- Second Digit '3' ---
     val x4 = x3 + wDigit + gap
-    drawBlockThree(x4)
+    drawTechnoThree(x4)
   }
 }
 

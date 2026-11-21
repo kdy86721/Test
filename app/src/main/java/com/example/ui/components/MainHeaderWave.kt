@@ -21,9 +21,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.NoPhotography
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -34,12 +31,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -48,10 +52,13 @@ import com.example.R
 import com.example.ui.theme.CameraGuardTheme
 
 /**
- * Top curved wave header supporting both visual states:
- * - Default (isBlocked = false): vivid crimson header, "메뉴"/"삭제" buttons, install datetime + support info
- * - Blocked active (isBlocked = true): warm amber/gold header, "메뉴" + outlined line-icon button,
- *   install datetime + "차단일시 : 26.11.21 18:19" + support info
+ * Top curved dual-wave header supporting both visual states:
+ * - Default (isBlocked = false): vivid crimson header, "메뉴"/"삭제" outline buttons, install datetime + support info
+ * - Blocked active (isBlocked = true): warm amber/gold header, "메뉴" outline button + white ringing bell icon,
+ *   install datetime + "차단일시 : YY.MM.DD HH:mm" + support info
+ *
+ * Uses a fixed dp wave zone at the bottom edge so the text-to-wave clearance (~32dp) stays clean
+ * and consistent across both unblocked and blocked heights.
  */
 @Composable
 fun MainHeaderWave(
@@ -94,86 +101,106 @@ fun MainHeaderWave(
     Canvas(modifier = Modifier.matchParentSize()) {
       val width = size.width
       val height = size.height
+      // Fixed dp wave band at bottom so S-curve amplitude never crowds text regardless of header height
+      val waveBand = 46.dp.toPx().coerceAtMost(height * 0.24f)
+      val baseY = height - waveBand
 
-      // Upper translucent smoky wave peeking gracefully above the transition
-      val backWavePath =
+      // Layer 1 (rear): Translucent smoky overlapping wave arching slightly higher on the left-to-center
+      val rearShadowWave =
         Path().apply {
-          moveTo(0f, height * 0.89f)
+          moveTo(0f, baseY + waveBand * 0.28f)
           cubicTo(
-            width * 0.24f,
-            height * 0.96f,
+            width * 0.22f,
+            baseY + waveBand * 0.56f,
             width * 0.44f,
-            height * 0.78f,
+            baseY + waveBand * 0.02f,
             width * 0.66f,
-            height * 0.81f,
+            baseY + waveBand * 0.14f,
           )
           cubicTo(
             width * 0.82f,
-            height * 0.83f,
+            baseY + waveBand * 0.24f,
             width * 0.92f,
-            height * 0.91f,
+            baseY + waveBand * 0.58f,
             width,
-            height * 0.94f,
+            baseY + waveBand * 0.72f,
           )
           lineTo(width, height)
           cubicTo(
-            width * 0.72f,
-            height * 0.92f,
-            width * 0.34f,
-            height * 0.97f,
+            width * 0.74f,
+            baseY + waveBand * 0.56f,
+            width * 0.44f,
+            baseY + waveBand * 0.94f,
+            width * 0.18f,
+            baseY + waveBand * 0.74f,
+          )
+          cubicTo(
+            width * 0.08f,
+            baseY + waveBand * 0.66f,
+            width * 0.03f,
+            baseY + waveBand * 0.78f,
             0f,
-            height * 0.95f,
+            baseY + waveBand * 0.86f,
           )
           close()
         }
-      drawPath(path = backWavePath, color = backWaveColor)
+      drawPath(path = rearShadowWave, color = backWaveColor)
 
-      // Secondary deeper translucent wave ribbon right below the upper wave
-      val midWavePath =
+      // Layer 2 (middle): Secondary offset translucent shadow wave gently sweeping below the main S-curve
+      val midShadowWave =
         Path().apply {
-          moveTo(0f, height * 0.91f)
+          moveTo(0f, baseY + waveBand * 0.42f)
           cubicTo(
-            width * 0.26f,
-            height * 0.96f,
-            width * 0.56f,
-            height * 0.84f,
-            width,
-            height * 0.97f,
+            width * 0.18f,
+            baseY + waveBand * 0.20f,
+            width * 0.42f,
+            baseY + waveBand * 0.82f,
+            width * 0.70f,
+            baseY + waveBand * 0.42f,
           )
-          lineTo(width, height)
           cubicTo(
-            width * 0.66f,
-            height * 0.91f,
-            width * 0.30f,
-            height * 0.98f,
+            width * 0.84f,
+            baseY + waveBand * 0.24f,
+            width * 0.93f,
+            baseY + waveBand * 0.52f,
+            width,
+            baseY + waveBand * 0.64f,
+          )
+          lineTo(width, baseY + waveBand * 0.94f)
+          cubicTo(
+            width * 0.76f,
+            baseY + waveBand * 0.72f,
+            width * 0.44f,
+            baseY + waveBand * 0.98f,
             0f,
-            height * 0.96f,
+            baseY + waveBand * 0.84f,
           )
           close()
         }
-      drawPath(path = midWavePath, color = midWaveColor)
+      drawPath(path = midShadowWave, color = midWaveColor)
 
-      // Main curved header body (crimson when unblocked, warm amber/gold when blocked)
+      // Layer 3 (front): Main solid gradient header with smooth S-curve bottom edge
+      // Left starts slightly lower -> gentle dip -> broad center-right rise -> smooth descent to right edge
       val headerWavePath =
         Path().apply {
           moveTo(0f, 0f)
           lineTo(width, 0f)
-          lineTo(width, height * 0.95f)
+          lineTo(width, baseY + waveBand * 0.84f)
           cubicTo(
-            width * 0.82f,
-            height * 0.87f,
-            width * 0.68f,
-            height * 0.80f,
-            width * 0.52f,
-            height * 0.82f,
+            width * 0.86f,
+            baseY + waveBand * 0.46f,
+            width * 0.72f,
+            baseY + waveBand * 0.08f,
+            width * 0.55f,
+            baseY + waveBand * 0.10f,
           )
           cubicTo(
-            width * 0.32f,
-            height * 0.84f,
-            width * 0.16f,
-            height * 0.95f,
+            width * 0.36f,
+            baseY + waveBand * 0.12f,
+            width * 0.18f,
+            baseY + waveBand * 0.54f,
             0f,
-            height * 0.90f,
+            baseY + waveBand * 0.36f,
           )
           close()
         }
@@ -191,78 +218,79 @@ fun MainHeaderWave(
       modifier =
         Modifier.fillMaxWidth()
           .padding(
-            top = 10.dp,
-            start = 14.dp,
-            end = 14.dp,
-            bottom = if (isBlocked) 44.dp else 52.dp,
+            top = 12.dp,
+            start = 18.dp,
+            end = 18.dp,
+            // 46dp wave zone + ~30.6dp clear margin below operating-hours text = 72dp total bottom inset
+            bottom = 72.dp,
           ),
       horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-      // Top bar: 메뉴 (left), Winged-Anchor-Star Emblem (center), 삭제 or Blocked Icon (right)
+      // Top bar: 메뉴 (left), 국방부 엠블럼 (center), 삭제 or Ringing Bell Icon (right) on one balanced horizontal line
       Box(modifier = Modifier.fillMaxWidth()) {
         HeaderOutlineButton(
           label = stringResource(R.string.action_menu),
           onClick = onMenuClick,
           testTag = "menu_button",
-          modifier = Modifier.align(Alignment.TopStart),
+          modifier = Modifier.align(Alignment.CenterStart),
         )
 
         DefenseWingAnchorEmblem(
           modifier =
-            Modifier.align(Alignment.TopCenter)
-              .padding(top = 2.dp)
-              .size(width = 84.dp, height = 60.dp),
+            Modifier.align(Alignment.Center)
+              .size(width = 96.dp, height = 68.dp),
         )
 
         if (isBlocked) {
-          HeaderOutlineIconButton(
+          HeaderBellIconButton(
             onClick = onRightActionClick,
             testTag = "blocked_header_icon_button",
-            modifier = Modifier.align(Alignment.TopEnd),
+            modifier = Modifier.align(Alignment.CenterEnd),
           )
         } else {
           HeaderOutlineButton(
             label = stringResource(R.string.action_delete),
             onClick = onRightActionClick,
             testTag = "delete_button",
-            modifier = Modifier.align(Alignment.TopEnd),
+            modifier = Modifier.align(Alignment.CenterEnd),
           )
         }
       }
 
-      Spacer(modifier = Modifier.height(12.dp))
+      // ~24-28dp spacing below emblem before install timestamp
+      Spacer(modifier = Modifier.height(24.dp))
 
       // Install date-time (large bold white text, synced across both unblocked and blocked states)
       Text(
         text = stringResource(R.string.install_datetime_format, installDateTimeText),
         style =
           MaterialTheme.typography.headlineSmall.copy(
-            fontSize = 20.5.sp,
-            lineHeight = 26.sp,
+            fontSize = 21.5.sp,
+            lineHeight = 27.sp,
             fontWeight = FontWeight.ExtraBold,
-            letterSpacing = (-0.3).sp,
+            letterSpacing = (-0.4).sp,
           ),
         color = colors.menuTextPrimary,
         textAlign = TextAlign.Center,
         modifier = Modifier.testTag("install_datetime_text"),
       )
 
-      // Recorded blocked timestamp shown when blocked active state is enabled
+      // Recorded blocked timestamp shown when blocked active state is enabled (~12-14dp below install time)
       AnimatedVisibility(
         visible = isBlocked,
         enter = fadeIn(tween(200)) + expandVertically(tween(200)),
         exit = fadeOut(tween(150)) + shrinkVertically(tween(180)),
       ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-          Spacer(modifier = Modifier.height(4.dp))
+          Spacer(modifier = Modifier.height(12.dp))
           Text(
             text = stringResource(R.string.blocked_datetime_format, blockedTimestampText),
             style =
               MaterialTheme.typography.headlineSmall.copy(
-                fontSize = 20.5.sp,
-                lineHeight = 26.sp,
+                fontSize = 21.5.sp,
+                lineHeight = 27.sp,
                 fontWeight = FontWeight.ExtraBold,
-                letterSpacing = (-0.3).sp,
+                letterSpacing = (-0.4).sp,
               ),
             color = colors.menuTextPrimary,
             textAlign = TextAlign.Center,
@@ -271,15 +299,16 @@ fun MainHeaderWave(
         }
       }
 
-      Spacer(modifier = Modifier.height(if (isBlocked) 10.dp else 14.dp))
+      // ~22-26dp generous separation before customer support center block
+      Spacer(modifier = Modifier.height(24.dp))
 
       // Customer support center heading
       Text(
         text = stringResource(R.string.support_center_title),
         style =
           MaterialTheme.typography.titleMedium.copy(
-            fontSize = 15.5.sp,
-            lineHeight = 20.sp,
+            fontSize = 16.sp,
+            lineHeight = 21.sp,
             fontWeight = FontWeight.Bold,
           ),
         color = colors.menuTextPrimary,
@@ -287,33 +316,35 @@ fun MainHeaderWave(
         modifier = Modifier.testTag("main_support_center_title"),
       )
 
-      Spacer(modifier = Modifier.height(3.dp))
+      // 4-6dp gap before bold phone number
+      Spacer(modifier = Modifier.height(5.dp))
 
       // Bold highlighted phone number (static display only, no dial intent)
       Text(
         text = stringResource(R.string.support_center_phone),
         style =
           MaterialTheme.typography.titleMedium.copy(
-            fontSize = 17.sp,
+            fontSize = 17.5.sp,
             lineHeight = 22.sp,
             fontWeight = FontWeight.ExtraBold,
-            letterSpacing = 0.sp,
+            letterSpacing = (-0.1).sp,
           ),
         color = colors.menuTextPrimary,
         textAlign = TextAlign.Center,
         modifier = Modifier.testTag("main_support_center_phone"),
       )
 
-      Spacer(modifier = Modifier.height(2.dp))
+      // 2-4dp tight gap before operating hours
+      Spacer(modifier = Modifier.height(3.dp))
 
       // Support center operating hours
       Text(
         text = stringResource(R.string.support_center_hours),
         style =
           MaterialTheme.typography.bodyMedium.copy(
-            fontSize = 13.5.sp,
+            fontSize = 13.8.sp,
             lineHeight = 18.sp,
-            fontWeight = FontWeight.Medium,
+            fontWeight = FontWeight.SemiBold,
           ),
         color = colors.menuTextPrimary,
         textAlign = TextAlign.Center,
@@ -333,7 +364,7 @@ private fun HeaderOutlineButton(
   val colors = CameraGuardTheme.colors
   val interactionSource = remember { MutableInteractionSource() }
 
-  // 48dp minimum touch area wrapping the compact outlined rectangle button
+  // 48dp minimum touch area wrapping the thin-outlined white rectangle button
   Box(
     modifier =
       modifier
@@ -346,19 +377,23 @@ private fun HeaderOutlineButton(
           onClick = onClick,
         )
         .testTag(testTag)
-        .padding(horizontal = 2.dp, vertical = 6.dp),
+        .padding(horizontal = 2.dp, vertical = 5.dp),
     contentAlignment = Alignment.Center,
   ) {
     Surface(
       shape = RoundedCornerShape(4.dp),
       color = Color.Transparent,
-      border = BorderStroke(width = 1.1.dp, color = colors.headerOutlineWhite),
-      modifier = Modifier.width(56.dp).height(33.dp),
+      border = BorderStroke(width = 1.3.dp, color = colors.headerOutlineWhite),
+      modifier = Modifier.width(62.dp).height(36.dp),
     ) {
       Box(contentAlignment = Alignment.Center) {
         Text(
           text = label,
-          style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+          style =
+            MaterialTheme.typography.labelLarge.copy(
+              fontSize = 14.sp,
+              fontWeight = FontWeight.Bold,
+            ),
           color = colors.menuTextPrimary,
           maxLines = 1,
         )
@@ -368,46 +403,94 @@ private fun HeaderOutlineButton(
 }
 
 /**
- * Top-right outlined rounded-rectangle icon button shown in the blocked active header state.
+ * Top-right crisp white ringing notification bell icon shown in the blocked active header state,
+ * matching the close-up reference photo (no border box, ringing arcs on both sides).
  */
 @Composable
-private fun HeaderOutlineIconButton(
+private fun HeaderBellIconButton(
   onClick: () -> Unit,
   testTag: String,
   modifier: Modifier = Modifier,
 ) {
   val colors = CameraGuardTheme.colors
   val interactionSource = remember { MutableInteractionSource() }
+  val bellDesc = stringResource(R.string.cd_header_lock_action)
 
   Box(
     modifier =
       modifier
         .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
-        .clip(RoundedCornerShape(6.dp))
+        .clip(RoundedCornerShape(8.dp))
         .clickable(
           interactionSource = interactionSource,
           indication = ripple(color = colors.menuTextPrimary),
           role = Role.Button,
           onClick = onClick,
         )
+        .semantics { contentDescription = bellDesc }
         .testTag(testTag)
-        .padding(horizontal = 2.dp, vertical = 6.dp),
+        .padding(6.dp),
     contentAlignment = Alignment.Center,
   ) {
-    Surface(
-      shape = RoundedCornerShape(4.dp),
-      color = Color.Transparent,
-      border = BorderStroke(width = 1.1.dp, color = colors.headerOutlineWhite),
-      modifier = Modifier.width(46.dp).height(33.dp),
-    ) {
-      Box(contentAlignment = Alignment.Center) {
-        Icon(
-          imageVector = Icons.Outlined.NoPhotography,
-          contentDescription = stringResource(R.string.cd_header_lock_action),
-          tint = colors.menuTextPrimary,
-          modifier = Modifier.size(19.dp),
-        )
-      }
+    Canvas(modifier = Modifier.size(30.dp)) {
+      val w = size.width
+      val h = size.height
+      val cx = w * 0.5f
+      val bellColor = colors.menuTextPrimary
+      val stroke = Stroke(width = 2.3.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
+
+      // Top small bell loop knob
+      drawLine(
+        color = bellColor,
+        start = Offset(cx, h * 0.13f),
+        end = Offset(cx, h * 0.21f),
+        strokeWidth = 2.6.dp.toPx(),
+        cap = StrokeCap.Round,
+      )
+
+      // Bell dome & flared rim
+      val bellBody =
+        Path().apply {
+          moveTo(w * 0.24f, h * 0.72f)
+          quadraticTo(w * 0.29f, h * 0.65f, w * 0.30f, h * 0.44f)
+          cubicTo(w * 0.30f, h * 0.27f, w * 0.39f, h * 0.21f, cx, h * 0.21f)
+          cubicTo(w * 0.61f, h * 0.21f, w * 0.70f, h * 0.27f, w * 0.70f, h * 0.44f)
+          quadraticTo(w * 0.71f, h * 0.65f, w * 0.76f, h * 0.72f)
+          close()
+        }
+      drawPath(path = bellBody, color = bellColor, style = stroke)
+
+      // Bottom clapper semicircle
+      drawArc(
+        color = bellColor,
+        startAngle = 0f,
+        sweepAngle = 180f,
+        useCenter = false,
+        topLeft = Offset(cx - w * 0.085f, h * 0.72f - w * 0.04f),
+        size = Size(w * 0.17f, w * 0.14f),
+        style = stroke,
+      )
+
+      // Left & right ringing vibration arcs
+      val arcStroke = Stroke(width = 2.0.dp.toPx(), cap = StrokeCap.Round)
+      drawArc(
+        color = bellColor,
+        startAngle = 148f,
+        sweepAngle = 64f,
+        useCenter = false,
+        topLeft = Offset(w * 0.08f, h * 0.29f),
+        size = Size(w * 0.26f, h * 0.36f),
+        style = arcStroke,
+      )
+      drawArc(
+        color = bellColor,
+        startAngle = -32f,
+        sweepAngle = 64f,
+        useCenter = false,
+        topLeft = Offset(w * 0.66f, h * 0.29f),
+        size = Size(w * 0.26f, h * 0.36f),
+        style = arcStroke,
+      )
     }
   }
 }

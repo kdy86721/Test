@@ -53,7 +53,7 @@ import com.example.ui.theme.CameraGuardTheme
  * Screen 1: Main Screen (pure UI mockup supporting isBlocked = false / true visual states).
  * - Default (isBlocked = false): crimson curved header, simple translucent camera ring, brown "카메라 차단" button
  * - Blocked (isBlocked = true): amber/gold curved header with "차단일시", radial tick-mark prohibition camera
- *   emblem with static "0 일 / 00 : 00 : 15", and slate-grey "기능해제(바른)" button returning to default state
+ *   emblem with live elapsed time, and slate-grey "기능해제(비콘)" button returning to default state
  */
 @Composable
 fun MainScreen(
@@ -118,10 +118,10 @@ fun MainScreen(
         modifier = Modifier.weight(1f).fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
       ) {
-        // Centered "국방헬프콜 1303" emblem & logo preserved across both states
-        DefenseHelpCallBanner(modifier = Modifier.padding(top = 2.dp))
+        // Centered "국방헬프콜 1303" emblem & logo positioned 10dp below the wave boundary
+        DefenseHelpCallBanner(modifier = Modifier.padding(top = 10.dp))
 
-        Spacer(modifier = Modifier.weight(0.75f))
+        Spacer(modifier = Modifier.weight(0.5f))
 
         // Central camera visual switching smoothly between default ring and blocked radial tick ring
         AnimatedContent(
@@ -147,7 +147,7 @@ fun MainScreen(
         Spacer(modifier = Modifier.weight(0.95f))
       }
 
-      // Bottom primary pill action button ("카메라 차단" <-> "기능해제(바른)")
+      // Bottom primary pill action button ("카메라 차단" <-> "기능해제(비콘)")
       MainActionMockButton(
         isBlocked = isBlocked,
         onClick = { onSetBlocked(!isBlocked) },
