@@ -43,10 +43,24 @@ jobs:
           echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
           echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
 
-      - name: Decode debug keystore
+      - name: Prepare debug keystore
         run: |
-          if [ -f debug.keystore.base64 ] && [ ! -f debug.keystore ]; then
+          if [ -f debug.keystore ]; then
+            echo "Using existing debug.keystore"
+          elif [ -f debug.keystore.base64 ]; then
+            echo "Decoding debug.keystore from debug.keystore.base64"
             base64 -d debug.keystore.base64 > debug.keystore
+          else
+            echo "Generating standard Android debug.keystore via keytool"
+            keytool -genkeypair -v \
+              -keystore debug.keystore \
+              -storepass android \
+              -alias androiddebugkey \
+              -keypass android \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -dname "CN=Android Debug,O=Android,C=US"
           fi
 
       - name: Set up Gradle
