@@ -80,13 +80,13 @@ fun MainHeaderWave(
   val horizontalPad = lerp(14.dp, 18.dp, f)
   val emblemWidth = lerp(68.dp, 96.dp, f)
   val emblemHeight = lerp(48.dp, 68.dp, f)
-  val gapAfterEmblem = lerp(10.dp, 24.dp, f)
+  val gapAfterEmblem = lerp(9.dp, 22.dp, f)
   val gapBetweenTimestamps = lerp(5.dp, 12.dp, f)
-  val gapBeforeSupport = lerp(10.dp, 24.dp, f)
+  val gapBeforeSupport = lerp(9.dp, 22.dp, f)
   val gapSupportTitlePhone = lerp(2.dp, 5.dp, f)
   val gapSupportPhoneHours = lerp(1.dp, 3.dp, f)
-  val waveBandDp = lerp(28.dp, 46.dp, f)
-  val waveTextClearance = lerp(14.dp, 26.dp, f)
+  val waveBandDp = lerp(48.dp, 68.dp, f)
+  val waveTextClearance = lerp(12.dp, 22.dp, f)
   val totalBottomInset = waveBandDp + waveTextClearance
 
   val textScale = 0.78f + 0.22f * f
@@ -123,121 +123,133 @@ fun MainHeaderWave(
       animationSpec = colorAnim,
       label = "midWaveColor",
     )
+  val lowerBgColor by
+    animateColorAsState(
+      targetValue = if (isBlocked) colors.blockedMainBackground else colors.mainBackground,
+      animationSpec = colorAnim,
+      label = "lowerBgColor",
+    )
 
   Box(modifier = modifier.fillMaxWidth()) {
     Canvas(modifier = Modifier.matchParentSize()) {
       val width = size.width
       val height = size.height
-      // Responsive wave band at bottom edge so S-curve amplitude never crowds text
-      val waveBand = waveBandDp.toPx().coerceAtMost(height * 0.24f)
+      // Expressive 3-layer overlapping S-curve wave zone at bottom of the header
+      val waveBand = waveBandDp.toPx().coerceAtMost(height * 0.30f)
       val baseY = height - waveBand
 
-      // Layer 1 (rear): Translucent smoky overlapping wave arching slightly higher on the left-to-center
-      val rearShadowWave =
-        Path().apply {
-          moveTo(0f, baseY + waveBand * 0.28f)
-          cubicTo(
-            width * 0.22f,
-            baseY + waveBand * 0.56f,
-            width * 0.44f,
-            baseY + waveBand * 0.02f,
-            width * 0.66f,
-            baseY + waveBand * 0.14f,
-          )
-          cubicTo(
-            width * 0.82f,
-            baseY + waveBand * 0.24f,
-            width * 0.92f,
-            baseY + waveBand * 0.58f,
-            width,
-            baseY + waveBand * 0.72f,
-          )
-          lineTo(width, height)
-          cubicTo(
-            width * 0.74f,
-            baseY + waveBand * 0.56f,
-            width * 0.44f,
-            baseY + waveBand * 0.94f,
-            width * 0.18f,
-            baseY + waveBand * 0.74f,
-          )
-          cubicTo(
-            width * 0.08f,
-            baseY + waveBand * 0.66f,
-            width * 0.03f,
-            baseY + waveBand * 0.78f,
-            0f,
-            baseY + waveBand * 0.86f,
-          )
-          close()
-        }
-      drawPath(path = rearShadowWave, color = backWaveColor)
-
-      // Layer 2 (middle): Secondary offset translucent shadow wave gently sweeping below the main S-curve
-      val midShadowWave =
-        Path().apply {
-          moveTo(0f, baseY + waveBand * 0.42f)
-          cubicTo(
-            width * 0.18f,
-            baseY + waveBand * 0.20f,
-            width * 0.42f,
-            baseY + waveBand * 0.82f,
-            width * 0.70f,
-            baseY + waveBand * 0.42f,
-          )
-          cubicTo(
-            width * 0.84f,
-            baseY + waveBand * 0.24f,
-            width * 0.93f,
-            baseY + waveBand * 0.52f,
-            width,
-            baseY + waveBand * 0.64f,
-          )
-          lineTo(width, baseY + waveBand * 0.94f)
-          cubicTo(
-            width * 0.76f,
-            baseY + waveBand * 0.72f,
-            width * 0.44f,
-            baseY + waveBand * 0.98f,
-            0f,
-            baseY + waveBand * 0.84f,
-          )
-          close()
-        }
-      drawPath(path = midShadowWave, color = midWaveColor)
-
-      // Layer 3 (front): Main solid gradient header with smooth S-curve bottom edge
-      val headerWavePath =
-        Path().apply {
-          moveTo(0f, 0f)
-          lineTo(width, 0f)
-          lineTo(width, baseY + waveBand * 0.84f)
-          cubicTo(
-            width * 0.86f,
-            baseY + waveBand * 0.46f,
-            width * 0.72f,
-            baseY + waveBand * 0.08f,
-            width * 0.55f,
-            baseY + waveBand * 0.10f,
-          )
-          cubicTo(
-            width * 0.36f,
-            baseY + waveBand * 0.12f,
-            width * 0.18f,
-            baseY + waveBand * 0.54f,
-            0f,
-            baseY + waveBand * 0.36f,
-          )
-          close()
-        }
-
-      drawPath(
-        path = headerWavePath,
+      // Base: Solid vivid header gradient filling down to the bottom of the wave zone
+      drawRect(
         brush =
           Brush.verticalGradient(
             colors = listOf(headerTopColor, headerBottomColor),
           ),
       )
+
+      // Wave 1 (back-most smoky translucent crest):
+      // Sweeps gently down on left -> arches HIGH at center-right (x=0.56) -> descends sharply right
+      val wave1Path =
+        Path().apply {
+          moveTo(0f, baseY + waveBand * 0.38f)
+          cubicTo(
+            width * 0.14f,
+            baseY + waveBand * 0.50f,
+            width * 0.24f,
+            baseY + waveBand * 0.44f,
+            width * 0.38f,
+            baseY + waveBand * 0.22f,
+          )
+          cubicTo(
+            width * 0.48f,
+            baseY + waveBand * 0.04f,
+            width * 0.62f,
+            baseY + waveBand * 0.02f,
+            width * 0.74f,
+            baseY + waveBand * 0.22f,
+          )
+          cubicTo(
+            width * 0.85f,
+            baseY + waveBand * 0.42f,
+            width * 0.93f,
+            baseY + waveBand * 0.72f,
+            width,
+            baseY + waveBand * 0.86f,
+          )
+          lineTo(width, height)
+          lineTo(0f, height)
+          close()
+        }
+      drawPath(path = wave1Path, color = backWaveColor.copy(alpha = 0.82f))
+
+      // Wave 2 (middle crossing smoky ribbon — out of phase with Wave 1):
+      // Starts high on left -> dips cleanly at center-left (exposing Wave 1 arch!) -> crests on right-center (x=0.72)
+      val wave2Path =
+        Path().apply {
+          moveTo(0f, baseY + waveBand * 0.40f)
+          cubicTo(
+            width * 0.12f,
+            baseY + waveBand * 0.56f,
+            width * 0.28f,
+            baseY + waveBand * 0.68f,
+            width * 0.44f,
+            baseY + waveBand * 0.58f,
+          )
+          cubicTo(
+            width * 0.58f,
+            baseY + waveBand * 0.48f,
+            width * 0.68f,
+            baseY + waveBand * 0.24f,
+            width * 0.82f,
+            baseY + waveBand * 0.44f,
+          )
+          cubicTo(
+            width * 0.90f,
+            baseY + waveBand * 0.56f,
+            width * 0.96f,
+            baseY + waveBand * 0.74f,
+            width,
+            baseY + waveBand * 0.86f,
+          )
+          lineTo(width, height)
+          lineTo(0f, height)
+          close()
+        }
+      drawPath(path = wave2Path, color = midWaveColor.copy(alpha = 0.88f))
+
+      // Wave 3 (front-most solid lower-screen background curve):
+      // Starts low on left edge -> rises into a crisp left crest above the HelpCall symbol -> sweeps gently right
+      val wave3Path =
+        Path().apply {
+          moveTo(0f, baseY + waveBand * 0.86f)
+          cubicTo(
+            width * 0.08f,
+            baseY + waveBand * 0.66f,
+            width * 0.16f,
+            baseY + waveBand * 0.60f,
+            width * 0.28f,
+            baseY + waveBand * 0.64f,
+          )
+          cubicTo(
+            width * 0.44f,
+            baseY + waveBand * 0.69f,
+            width * 0.62f,
+            baseY + waveBand * 0.84f,
+            width * 0.80f,
+            baseY + waveBand * 0.86f,
+          )
+          cubicTo(
+            width * 0.90f,
+            baseY + waveBand * 0.87f,
+            width * 0.96f,
+            baseY + waveBand * 0.92f,
+            width,
+            baseY + waveBand * 0.96f,
+          )
+          lineTo(width, height)
+          lineTo(0f, height)
+          close()
+        }
+      drawPath(path = wave3Path, color = lowerBgColor)
     }
 
     Column(

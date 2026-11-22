@@ -92,7 +92,9 @@ fun MainScreen(
         .background(
           brush =
             Brush.verticalGradient(
-              colors = listOf(bgPrimary, bgSecondary, bgPrimary),
+              0.0f to bgPrimary,
+              0.50f to bgPrimary,
+              1.0f to bgSecondary,
             ),
         )
         .statusBarsPadding(),
@@ -104,7 +106,7 @@ fun MainScreen(
       // Smoothly adapt header & logo proportions across short (<= 480dp) to tall (>= 760dp) screens
       val heightFraction = ((maxHeight - 460.dp) / (760.dp - 460.dp)).coerceIn(0f, 1f)
       val helpCallScale = 0.72f + 0.28f * heightFraction
-      val helpCallTopPadding = lerp(4.dp, 10.dp, heightFraction)
+      val helpCallTopPadding = lerp(0.dp, 4.dp, heightFraction)
       val buttonBottomSpacer = lerp(8.dp, 14.dp, heightFraction)
       val footerVerticalPadding = lerp(6.dp, 10.dp, heightFraction)
 

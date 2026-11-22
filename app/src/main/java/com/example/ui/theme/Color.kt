@@ -13,12 +13,12 @@ val MenuBackground = Color(0xFF1B1B1D)
 // Header crimson (default) & amber/gold (blocked) + layered translucent waves
 val HeaderCrimson = Color(0xFFDC182B)
 val HeaderCrimsonTop = Color(0xFFE31B2E)
-val HeaderWaveShadow = Color(0x526E6268)
-val HeaderWaveSecondary = Color(0x3D494246)
+val HeaderWaveShadow = Color(0xFF66454B)
+val HeaderWaveSecondary = Color(0xFF3E3539)
 val HeaderAmberTop = Color(0xFFF3C372)
 val HeaderAmberBottom = Color(0xFFECB258)
-val BlockedWaveShadow = Color(0x5C847E8E)
-val BlockedWaveSecondary = Color(0x475A5B6B)
+val BlockedWaveShadow = Color(0xFF887E84)
+val BlockedWaveSecondary = Color(0xFF535464)
 val HeaderOutlineWhite = Color(0xEBFFFFFF)
 
 // Top center defense emblem colors
