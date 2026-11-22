@@ -45,6 +45,9 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.ui.unit.Dp
+
 /**
  * Centered "국방헬프콜 1303" brand logo strip positioned right below the header wave transition:
  * - Left: colorful winged embracing dual-figure graphic (sky-blue→deep-blue left figure with
@@ -53,9 +56,13 @@ import kotlin.math.sin
  * - Right bottom: thick square/techno geometric "1303" with vertical gold (#FFB300) → orange-red (#F4511E) gradient
  */
 @Composable
-fun DefenseHelpCallBanner(modifier: Modifier = Modifier) {
+fun DefenseHelpCallBanner(
+  modifier: Modifier = Modifier,
+  scale: Float = 1f,
+) {
   val colors = CameraGuardTheme.colors
   val logoDesc = stringResource(R.string.cd_help_call_logo)
+  val s = scale.coerceIn(0.68f, 1.05f)
 
   Row(
     modifier =
@@ -67,9 +74,9 @@ fun DefenseHelpCallBanner(modifier: Modifier = Modifier) {
     verticalAlignment = Alignment.CenterVertically,
   ) {
     // Colorful winged embracing dual-figure symbol
-    HelpCallFiguresEmblem(modifier = Modifier.size(width = 74.dp, height = 62.dp))
+    HelpCallFiguresEmblem(modifier = Modifier.size(width = (74f * s).dp, height = (62f * s).dp))
 
-    Spacer(modifier = Modifier.width(8.dp))
+    Spacer(modifier = Modifier.width((8f * s).dp))
 
     // Right stacked text block: "국방헬프콜" + curved blue handset on top, sharp block "1303" below
     Column(horizontalAlignment = Alignment.Start) {
@@ -80,26 +87,25 @@ fun DefenseHelpCallBanner(modifier: Modifier = Modifier) {
           text = stringResource(R.string.help_call_title),
           style =
             MaterialTheme.typography.titleMedium.copy(
-              fontSize = 17.sp,
-              lineHeight = 20.sp,
+              fontSize = (17f * s).sp,
+              lineHeight = (20f * s).sp,
               fontWeight = FontWeight.ExtraBold,
-              letterSpacing = (-0.5).sp,
+              letterSpacing = (-0.5f * s).sp,
             ),
           color = colors.helpCallBlue,
           maxLines = 1,
         )
 
-        Spacer(modifier = Modifier.width(2.dp))
+        Spacer(modifier = Modifier.width((2f * s).dp))
 
         // Upward-curving blue telephone handset / smile accent right beside "국방헬프콜"
-        Canvas(modifier = Modifier.size(width = 16.dp, height = 20.dp)) {
+        Canvas(modifier = Modifier.size(width = (16f * s).dp, height = (20f * s).dp)) {
           val w = size.width
           val h = size.height
           val handsetBrush =
             Brush.verticalGradient(
               colors = listOf(colors.helpCallBlueDeep, colors.helpCallBlue),
             )
-          // Curved handset spine sweeping from bottom-left up toward top-right
           val handsetBody =
             Path().apply {
               moveTo(w * 0.08f, h * 0.86f)
@@ -108,29 +114,27 @@ fun DefenseHelpCallBanner(modifier: Modifier = Modifier) {
           drawPath(
             path = handsetBody,
             brush = handsetBrush,
-            style = Stroke(width = 3.0.dp.toPx(), cap = StrokeCap.Round),
+            style = Stroke(width = w * 0.19f, cap = StrokeCap.Round),
           )
-          // Upper earpiece bulb
           drawRoundRect(
             color = colors.helpCallBlueDeep,
             topLeft = Offset(w * 0.46f, h * 0.08f),
             size = Size(w * 0.36f, h * 0.24f),
-            cornerRadius = CornerRadius(2.2.dp.toPx(), 2.2.dp.toPx()),
+            cornerRadius = CornerRadius(w * 0.14f, w * 0.14f),
           )
-          // Lower mouthpiece bulb
           drawRoundRect(
             color = colors.helpCallBlue,
             topLeft = Offset(w * 0.02f, h * 0.72f),
             size = Size(w * 0.34f, h * 0.22f),
-            cornerRadius = CornerRadius(2.2.dp.toPx(), 2.2.dp.toPx()),
+            cornerRadius = CornerRadius(w * 0.14f, w * 0.14f),
           )
         }
       }
 
-      Spacer(modifier = Modifier.height(3.dp))
+      Spacer(modifier = Modifier.height((3f * s).dp))
 
       // Bold square/techno vertical-gradient "1303" logo digits
-      OrangeBlock1303Logo(modifier = Modifier.width(114.dp).height(31.dp))
+      OrangeBlock1303Logo(modifier = Modifier.width((114f * s).dp).height((31f * s).dp))
     }
   }
 }
@@ -178,13 +182,10 @@ private fun HelpCallFiguresEmblem(modifier: Modifier = Modifier) {
     val wingPath =
       Path().apply {
         moveTo(w * 0.29f, h * 0.40f)
-        // Uppermost sweeping wing feather
         cubicTo(w * 0.18f, h * 0.36f, w * 0.08f, h * 0.33f, w * 0.02f, h * 0.31f)
         cubicTo(w * 0.06f, h * 0.42f, w * 0.14f, h * 0.47f, w * 0.22f, h * 0.49f)
-        // Middle wing feather
         cubicTo(w * 0.14f, h * 0.49f, w * 0.08f, h * 0.49f, w * 0.06f, h * 0.50f)
         cubicTo(w * 0.10f, h * 0.57f, w * 0.18f, h * 0.59f, w * 0.25f, h * 0.59f)
-        // Lower wing feather
         cubicTo(w * 0.18f, h * 0.62f, w * 0.13f, h * 0.64f, w * 0.12f, h * 0.65f)
         cubicTo(w * 0.19f, h * 0.69f, w * 0.26f, h * 0.68f, w * 0.32f, h * 0.65f)
         close()
@@ -263,14 +264,14 @@ private fun OrangeBlock1303Logo(modifier: Modifier = Modifier) {
       )
 
     val stroke = h * 0.245f
-    val corner = CornerRadius(1.3.dp.toPx(), 1.3.dp.toPx())
+    val corner = CornerRadius(h * 0.042f, h * 0.042f)
     val gap = w * 0.052f
 
     // Compact '1' width + 3 equal square-proportioned wide block digits ('3', '0', '3')
     val w1 = w * 0.145f
     val wDigit = (w - w1 - gap * 3f) / 3f
 
-    // --- Digit '1' (short square top-left flag + thick vertical right stem) ---
+    // --- Digit '1' ---
     val x1 = 0f
     drawRoundRect(
       brush = orangeBrush,
@@ -286,28 +287,24 @@ private fun OrangeBlock1303Logo(modifier: Modifier = Modifier) {
     )
 
     fun drawTechnoThree(left: Float) {
-      // Top horizontal bar
       drawRoundRect(
         brush = orangeBrush,
         topLeft = Offset(left, 0f),
         size = Size(wDigit, stroke),
         cornerRadius = corner,
       )
-      // Middle horizontal bar (slightly recessed on the left)
       drawRoundRect(
         brush = orangeBrush,
         topLeft = Offset(left + wDigit * 0.14f, (h - stroke) / 2f),
         size = Size(wDigit * 0.86f, stroke),
         cornerRadius = corner,
       )
-      // Bottom horizontal bar
       drawRoundRect(
         brush = orangeBrush,
         topLeft = Offset(left, h - stroke),
         size = Size(wDigit, stroke),
         cornerRadius = corner,
       )
-      // Full-height right vertical spine
       drawRoundRect(
         brush = orangeBrush,
         topLeft = Offset(left + wDigit - stroke * 0.95f, 0f),
@@ -320,7 +317,7 @@ private fun OrangeBlock1303Logo(modifier: Modifier = Modifier) {
     val x2 = x1 + w1 + gap
     drawTechnoThree(x2)
 
-    // --- Digit '0' (crisp rectangular block frame with sharp inner cutout) ---
+    // --- Digit '0' ---
     val x3 = x2 + wDigit + gap
     val zeroPath =
       Path().apply {
@@ -328,7 +325,7 @@ private fun OrangeBlock1303Logo(modifier: Modifier = Modifier) {
         addRoundRect(
           RoundRect(
             rect = Rect(left = x3, top = 0f, right = x3 + wDigit, bottom = h),
-            cornerRadius = CornerRadius(2.0.dp.toPx(), 2.0.dp.toPx()),
+            cornerRadius = CornerRadius(h * 0.065f, h * 0.065f),
           ),
         )
         addRoundRect(
@@ -340,7 +337,7 @@ private fun OrangeBlock1303Logo(modifier: Modifier = Modifier) {
                 right = x3 + wDigit - stroke * 0.95f,
                 bottom = h - stroke,
               ),
-            cornerRadius = CornerRadius(0.8.dp.toPx(), 0.8.dp.toPx()),
+            cornerRadius = CornerRadius(h * 0.026f, h * 0.026f),
           ),
         )
       }
@@ -354,23 +351,28 @@ private fun OrangeBlock1303Logo(modifier: Modifier = Modifier) {
 
 /**
  * Default (unblocked) central graphic: thick translucent smoky ring enclosing a white line camera.
+ * Scales all strokes proportionally to [ringSize] so it never distorts on compact screens.
  */
 @Composable
-fun CameraRingIcon(modifier: Modifier = Modifier) {
+fun CameraRingIcon(
+  modifier: Modifier = Modifier,
+  ringSize: Dp = 216.dp,
+) {
   val colors = CameraGuardTheme.colors
   val cameraDesc = stringResource(R.string.cd_camera_status_icon)
 
   Box(
     modifier =
       modifier
-        .size(216.dp)
+        .size(ringSize)
         .semantics { contentDescription = cameraDesc }
         .testTag("camera_ring_icon"),
     contentAlignment = Alignment.Center,
   ) {
     Canvas(modifier = Modifier.fillMaxSize()) {
-      val ringStrokePx = 22.dp.toPx()
-      val ringRadius = (size.minDimension - ringStrokePx) / 2f
+      val minDim = size.minDimension
+      val ringStrokePx = minDim * 0.102f
+      val ringRadius = (minDim - ringStrokePx) / 2f
 
       drawCircle(
         color = colors.cameraRingTranslucent,
@@ -380,53 +382,58 @@ fun CameraRingIcon(modifier: Modifier = Modifier) {
       )
 
       drawWhiteLineCamera(
-        camCenter = Offset(center.x, center.y + 2.dp.toPx()),
-        camW = size.width * 0.43f,
+        camCenter = Offset(center.x, center.y + minDim * 0.01f),
+        camW = minDim * 0.43f,
         strokeColor = colors.cameraStrokeWhite,
-        strokeWidthPx = 2.6.dp.toPx(),
+        strokeWidthPx = (minDim * 0.012f).coerceAtLeast(1.4.dp.toPx()),
       )
     }
   }
 }
 
 /**
- * Blocked active state central emblem matching the sixth reference image:
+ * Blocked active state central emblem:
  * - Outer 28-segment radial rectangular tick-mark ring (subtle bright-to-muted dial shading)
  * - Inner dark circle framed by a bold vivid red prohibition ring and diagonal slash (/)
  * - White line-art camera icon inside
  * - Real-time UI count-up elapsed days and HH : MM : SS display at the lower inner center
+ *
+ * Every geometric dimension and text metric scales proportionally to the rendered size via
+ * BoxWithConstraints so compact/split-screen windows keep crisp proportions without distortion.
  */
 @Composable
 fun BlockedCameraRingIcon(
   elapsedDays: Long,
   elapsedTimeText: String,
   modifier: Modifier = Modifier,
+  ringSize: Dp = 242.dp,
 ) {
   val colors = CameraGuardTheme.colors
   val blockedDesc = stringResource(R.string.cd_blocked_camera_icon)
 
-  Box(
+  BoxWithConstraints(
     modifier =
       modifier
-        .size(242.dp)
+        .size(ringSize)
         .semantics(mergeDescendants = true) { contentDescription = blockedDesc }
         .testTag("blocked_camera_ring_icon"),
     contentAlignment = Alignment.Center,
   ) {
+    val actualSize = minOf(maxWidth, maxHeight)
+    val sizeRatio = (actualSize.value / 242f).coerceIn(0.45f, 1.15f)
+
     Canvas(modifier = Modifier.fillMaxSize()) {
       val minDim = size.minDimension
 
-      // 1. Outer radial rectangular tick marks (28 evenly spaced segments)
+      // 1. Outer radial rectangular tick marks (28 evenly spaced segments, proportional to minDim)
       val tickCount = 28
-      val tickLength = 15.dp.toPx()
-      val tickWidth = 7.5.dp.toPx()
+      val tickLength = minDim * 0.062f
+      val tickWidth = minDim * 0.031f
       val tickOuterRadius = minDim * 0.495f
-      val tickCorner = CornerRadius(1.2.dp.toPx(), 1.2.dp.toPx())
+      val tickCorner = CornerRadius(minDim * 0.005f, minDim * 0.005f)
 
       for (i in 0 until tickCount) {
-        // Angle 0° = 12 o'clock, progressing clockwise
         val deg = i * (360f / tickCount)
-        // Upper-left through top-right arc (~205°..360° & 0°..25°) brighter, lower-right muted
         val isBrightSegment = deg >= 195f || deg <= 22f
         val tickColor = if (isBrightSegment) colors.blockedTickBright else colors.blockedTickMuted
 
@@ -440,8 +447,8 @@ fun BlockedCameraRingIcon(
         }
       }
 
-      // 2. Inner dark circle + bold red prohibition border ring
-      val redRingStroke = 9.5.dp.toPx()
+      // 2. Inner dark circle + bold red prohibition border ring (proportional stroke)
+      val redRingStroke = minDim * 0.039f
       val redRingRadius = minDim * 0.345f
 
       drawCircle(
@@ -456,12 +463,12 @@ fun BlockedCameraRingIcon(
         style = Stroke(width = redRingStroke),
       )
 
-      // 3. White line-art camera positioned slightly above vertical center to leave room for text
+      // 3. White line-art camera positioned slightly above center to leave room for elapsed text
       drawWhiteLineCamera(
-        camCenter = Offset(center.x, center.y - 14.dp.toPx()),
+        camCenter = Offset(center.x, center.y - minDim * 0.060f),
         camW = minDim * 0.355f,
         strokeColor = colors.cameraStrokeWhite,
-        strokeWidthPx = 2.4.dp.toPx(),
+        strokeWidthPx = (minDim * 0.010f).coerceAtLeast(1.3.dp.toPx()),
       )
 
       // 4. Bold diagonal prohibition slash (/) running from bottom-left to top-right across camera
@@ -482,41 +489,47 @@ fun BlockedCameraRingIcon(
         color = colors.blockedProhibitionRed,
         start = start,
         end = end,
-        strokeWidth = 7.5.dp.toPx(),
+        strokeWidth = minDim * 0.031f,
         cap = StrokeCap.Butt,
       )
     }
 
-    // Live UI count-up elapsed labels centered inside the lower half of the red ring
+    // Live UI count-up elapsed labels positioned proportionally inside the lower half of the red ring
+    val labelBottomPad = actualSize * 0.21f
+    val labelFontSize = (12.5f * sizeRatio).coerceIn(8.5f, 13.5f).sp
+    val labelLineHeight = (15f * sizeRatio).coerceIn(10f, 16f).sp
+
     Column(
-      modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 52.dp),
+      modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = labelBottomPad),
       horizontalAlignment = Alignment.CenterHorizontally,
     ) {
       Text(
         text = stringResource(R.string.blocked_elapsed_days_format, elapsedDays),
         style =
           MaterialTheme.typography.labelMedium.copy(
-            fontSize = 12.5.sp,
-            lineHeight = 15.sp,
+            fontSize = labelFontSize,
+            lineHeight = labelLineHeight,
             fontWeight = FontWeight.Bold,
           ),
         color = colors.menuTextPrimary,
         textAlign = TextAlign.Center,
+        maxLines = 1,
         modifier = Modifier.testTag("blocked_elapsed_days_text"),
       )
-      Spacer(modifier = Modifier.height(1.dp))
+      Spacer(modifier = Modifier.height((1.dp * sizeRatio).coerceAtLeast(0.5.dp)))
       Text(
         text = elapsedTimeText,
         style =
           MaterialTheme.typography.labelMedium.copy(
-            fontSize = 12.5.sp,
-            lineHeight = 15.sp,
+            fontSize = labelFontSize,
+            lineHeight = labelLineHeight,
             fontWeight = FontWeight.ExtraBold,
-            letterSpacing = 0.2.sp,
+            letterSpacing = (0.2f * sizeRatio).sp,
             fontFeatureSettings = "tnum",
           ),
         color = colors.menuTextPrimary,
         textAlign = TextAlign.Center,
+        maxLines = 1,
         modifier = Modifier.testTag("blocked_elapsed_time_text"),
       )
     }
@@ -537,7 +550,7 @@ private fun DrawScope.drawWhiteLineCamera(
   val top = camCenter.y - camH / 2f
   val bodyTop = top + camH * 0.16f
   val bodyBottom = top + camH
-  val corner = 5.5.dp.toPx()
+  val corner = camW * 0.062f
   val camStroke = Stroke(width = strokeWidthPx, cap = StrokeCap.Round, join = StrokeJoin.Round)
 
   // Small top-left shutter button bump
@@ -545,7 +558,7 @@ private fun DrawScope.drawWhiteLineCamera(
     color = strokeColor,
     topLeft = Offset(left + camW * 0.11f, bodyTop - camH * 0.09f),
     size = Size(camW * 0.13f, camH * 0.09f),
-    cornerRadius = CornerRadius(2.dp.toPx(), 2.dp.toPx()),
+    cornerRadius = CornerRadius(camW * 0.022f, camW * 0.022f),
     style = camStroke,
   )
 
